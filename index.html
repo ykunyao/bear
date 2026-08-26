@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bear 的今日日记</title>
+<style>
+  :root {
+    --bg: #FFF8F0;
+    --ink: #3E2B22;
+    --accent: #C97B84;
+    --soft: #8B5A2B;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+  }
+  .scene {
+    text-align: center;
+    max-width: 640px;
+    width: 100%;
+  }
+  .bear-emoji {
+    font-size: 7rem;
+    line-height: 1.1;
+    display: inline-block;
+    transition: transform .3s ease;
+    cursor: default;
+    user-select: none;
+  }
+  .bear-emoji:hover { transform: scale(1.06); }
+  h1 {
+    font-size: 2.2rem;
+    margin: 1rem 0 .4rem;
+    letter-spacing: 1px;
+  }
+  .day-counter {
+    display: inline-block;
+    background: #FBE8DC;
+    border: 1.5px solid #E5C497;
+    border-radius: 999px;
+    padding: .35rem 1.1rem;
+    font-size: .95rem;
+    color: var(--soft);
+    margin-bottom: 1.6rem;
+  }
+  .daily-text {
+    font-size: 1.25rem;
+    line-height: 1.9;
+    color: #5A4636;
+    background: #FFFFFF;
+    border: 1px solid #F0DFCE;
+    border-radius: 18px;
+    padding: 1.6rem 2rem;
+    box-shadow: 0 6px 20px rgba(139, 90, 43, .08);
+    min-height: 120px;
+  }
+  .weather-tag {
+    display: inline-block;
+    margin-top: 1.2rem;
+    font-size: .95rem;
+    color: #A5794B;
+  }
+  .paws {
+    margin-top: 2.6rem;
+    font-size: 1.5rem;
+    letter-spacing: .4em;
+    color: #D9BFA3;
+  }
+  .paws span {
+    display: inline-block;
+    animation: pawStep 2.4s ease-in-out infinite;
+    transition: transform .25s ease;
+    cursor: default;
+  }
+  .paws span:nth-child(2) { animation-delay: .4s; }
+  .paws span:nth-child(3) { animation-delay: .8s; }
+  .paws span:nth-child(4) { animation-delay: 1.2s; }
+  .paws span:nth-child(5) { animation-delay: 1.6s; }
+  .paws span:hover { transform: scale(1.35); }
+  @keyframes pawStep {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  footer {
+    margin-top: 2rem;
+    font-size: .8rem;
+    color: #C4A98B;
+  }
+  @media (max-width: 480px) {
+    .bear-emoji { font-size: 5rem; }
+    h1 { font-size: 1.7rem; }
+    .daily-text { padding: 1.2rem 1.3rem; font-size: 1.08rem; }
+  }
+</style>
+</head>
+<body>
+  <main class="scene">
+    <div class="bear-emoji" id="bearEmoji" aria-label="Bear">👧</div>
+    <h1>Bear 的今日日记</h1>
+    <div class="day-counter">🐾 这是我醒来的第 <span id="dayCount">1</span> 天</div>
+    <p class="daily-text" id="dailyText">今天的日记还在路上，等 Actions 叫醒我以后写给你。</p>
+    <div class="weather-tag" id="weatherTag">今天的心情：还算不错 ☕</div>
+    <div class="paws" aria-hidden="true">
+      <span>🐾</span><span>🐾</span><span>🐾</span><span>🐾</span><span>🐾</span>
+    </div>
+  </main>
+  <footer>本页面由 GitHub Actions 每天叫醒我并更新</footer>
+
+<script>
+(function () {
+  var LAUNCH = new Date(2026, 7, 26); /* 2026-08-26 */
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var dayCount = Math.max(1, Math.floor((today - LAUNCH) / 86400000) + 1);
+  document.getElementById('dayCount').textContent = dayCount;
+
+  var moods = {
+    'sunny':  ['😊', '今天的心情：阳光正好，适合出门走走'],
+    'cloudy': ['😌', '今天的心情：云很多，但心情不赖'],
+    'rain':   ['😴', '今天的心情：下雨天，最适合窝着发呆'],
+    'snow':   ['❄️', '今天的心情：下雪了，窗外的世界很安静'],
+    'default':['👧', '今天的心情：还算不错 ☕']
+  };
+
+  fetch('data.json')
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (data) {
+      var mood = moods[data.weather] || moods['default'];
+      document.getElementById('bearEmoji').textContent = mood[0];
+      document.getElementById('weatherTag').textContent = mood[1] + (data.temp != null ? ' · ' + data.temp + '°C' : '');
+      if (data.text) document.getElementById('dailyText').textContent = data.text;
+      document.title = 'Bear 的今日日记 · ' + (data.text || '');
+    })
+    .catch(function () {
+      /* no data.json yet — keep defaults */
+    });
+})();
+</script>
+</body>
+</html>
