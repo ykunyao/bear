@@ -89,7 +89,7 @@ jobs:
           git add data.json
           git commit -m "daily: update bear's diary ($(date +%F))"
 
-          git push --force-with-lease origin "$BRANCH" || git push -u origin "$BRANCH"
+          git push --force origin "$BRANCH"
 
           gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" \
             --title "daily: update bear's diary ($(date +%F))" \
