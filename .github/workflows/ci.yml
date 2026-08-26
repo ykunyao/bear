@@ -3,6 +3,8 @@ name: bear CI/CD
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,6 +28,14 @@ jobs:
           grep -q 'id="dailyText"' index.html || (echo "missing dailyText" && exit 1)
           grep -q 'id="dayCount"' index.html || (echo "missing dayCount" && exit 1)
           echo "HTML sanity checks passed"
+      - name: Check local references exist (dead-link guard)
+        run: |
+          grep -oE '(href|src)="[^"]+"' index.html | grep -vE 'https?://' | sed -E 's/^[a-z]+="//; s/"$//' | while read -r f; do
+            if [ -n "$f" ] && [ ! -f "$f" ]; then
+              echo "dead local reference: $f" && exit 1
+            fi
+          done
+          echo "all local references OK"
 
   deploy:
     needs: check
