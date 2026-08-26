@@ -68,9 +68,12 @@ jobs:
           print('data.json written:', data)
           PY
 
+      - name: Cleanup temp files
+        run: rm -f weather.json quote.json quote.txt
+
       - name: Commit and push
         run: |
-          if git diff --quiet data.json; then
+          if [ -z "$(git status --porcelain data.json)" ]; then
             echo "No change in data.json, skipping commit"
             exit 0
           fi
