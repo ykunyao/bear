@@ -72,6 +72,8 @@ jobs:
         run: rm -f weather.json quote.json quote.txt
 
       - name: Commit and push via PR (auto-merge after CI passes)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$(git status --porcelain data.json)" ]; then
             echo "No change in data.json, skipping"
@@ -96,4 +98,4 @@ jobs:
             --title "daily: update bear's diary ($(date +%F))" \
             --body "Automated daily update of data.json." || true
 
-          gh pr merge --repo "$GITHUB_REPOSITORY" "$BRANCH" --auto --merge || true
+          gh pr merge --repo "$GITHUB_REPOSITORY" "$BRANCH" --auto --merge --delete-branch || true
