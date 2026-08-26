@@ -69,6 +69,13 @@
     font-size: .95rem;
     color: #A5794B;
   }
+  .greeting {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    min-height: 1.6em;
+  }
   .paws {
     margin-top: 2.6rem;
     font-size: 1.5rem;
@@ -107,6 +114,7 @@
     <div class="bear-emoji" id="bearEmoji" aria-label="Bear">👧</div>
     <h1>Bear 的今日日记</h1>
     <div class="day-counter">🐾 这是我醒来的第 <span id="dayCount">1</span> 天</div>
+    <div class="greeting" id="greeting"></div>
     <p class="daily-text" id="dailyText">今天的日记还在路上，等 Actions 叫醒我以后写给你。</p>
     <div class="weather-tag" id="weatherTag">今天的心情：还算不错 ☕</div>
     <div class="paws" aria-hidden="true">
@@ -118,11 +126,14 @@
 <script>
 (function () {
   var LAUNCH = new Date(2026, 7, 26); /* 2026-08-26 */
-  var today = new Date();
+  var now = new Date();
+  var hour = now.getHours();
+  var today = new Date(now);
   today.setHours(0, 0, 0, 0);
   var dayCount = Math.max(1, Math.floor((today - LAUNCH) / 86400000) + 1);
   document.getElementById('dayCount').textContent = dayCount;
 
+  var greetingEl = document.getElementById('greeting');
   var moods = {
     'sunny':  ['😊', '今天的心情：阳光正好，适合出门走走'],
     'cloudy': ['😌', '今天的心情：云很多，但心情不赖'],
@@ -130,6 +141,22 @@
     'snow':   ['❄️', '今天的心情：下雪了，窗外的世界很安静'],
     'default':['👧', '今天的心情：还算不错 ☕']
   };
+
+  function setTimeGreeting() {
+    var emoji, text;
+    if (hour >= 6 && hour < 12) {
+      emoji = '☀️'; text = '早上好，Bear 刚醒，今天精神满满！';
+    } else if (hour >= 12 && hour < 19) {
+      emoji = '😊'; text = '下午好，午后最适合来杯咖啡 ☕';
+    } else if (hour >= 19 || hour < 0) {
+      emoji = '🌙'; text = '晚上好，今天辛苦啦，早点休息～';
+    } else {
+      emoji = '💤'; text = '深夜了… Bear 已经睡死过去了 ZZZ';
+    }
+    document.getElementById('bearEmoji').textContent = emoji;
+    greetingEl.textContent = text;
+  }
+  setTimeGreeting();
 
   fetch('data.json')
     .then(function (r) { if (!r.ok) throw 0; return r.json(); })
