@@ -17,13 +17,13 @@ jobs:
 
       - name: Fetch weather
         run: |
-          curl -s --max-time 20 "https://wttr.in/?format=j1" -o weather.json
+          curl -s --max-time 20 "https://wttr.in/Nanjing?format=j1" -o weather.json
           echo "weather.json fetched ($(wc -c < weather.json) bytes)"
 
       - name: Fetch quote
         id: quote
         run: |
-          curl -s --max-time 20 "https://v1.hitokoto.cn/?c=d&c=k&c=i&encode=json" -o quote.json
+          curl -s --max-time 20 "https://v1.hitokoto.cn/?c=d&c=k&encode=json" -o quote.json
           python -c "
           import json
           q = json.load(open('quote.json'))
