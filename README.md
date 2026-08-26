@@ -2,9 +2,10 @@
 
 一只名叫 Bear 的女孩，每天被 GitHub Actions 叫醒一次，写下一段今日日记。
 
-- 🧡 形象：emoji 主角 + 每天更新的文字
+- 🖨️ 复古打字机风 UI：米黄纸页、等宽字体、红色装订边、美纹胶带
+- ⌨️ 打字机逐字敲击动画 + 复古邮票头像框 + 纸面噪点
 - 📅 页面自动显示「醒来的第 N 天」
-- ☁️ 根据当天天气切换心情（后续第三关接入）
+- 🌤 每天自动更新南京实时天气 + 一句文学/哲学名言
 - 🐾 一排会点头的小脚印
 
 ## 结构
@@ -12,7 +13,7 @@
 ```
 index.html                 主页
 .github/workflows/ci.yml   CI/CD：语法检查 + 部署到 GitHub Pages
-.github/workflows/daily.yml 每日自动更新：抓天气 + 诗词，生成 data.json
+.github/workflows/daily.yml 每日自动更新：抓南京天气 + 文学/哲学句子，生成 data.json
 data.json                  由 cron 工作流每天生成的数据
 ```
 
@@ -24,9 +25,9 @@ data.json                  由 cron 工作流每天生成的数据
 
 每次 push 到 `main`，Actions 自动跑 `check`（校验文件）→ `deploy`（发布到 GitHub Pages）。
 
-## 每日自动更新（第三关）
+## 每日自动更新
 
-`daily.yml` 每天 08:00 由 cron 触发，自动完成：抓天气（wttr.in）+ 抓一句诗词（hitokoto.cn）→ 生成 `data.json` → 推送到 `bot/daily-update` 分支 → 开 PR → 等 CI 通过 → 自动合并 → 触发部署。前端通过 `fetch('data.json')` 读取数据渲染。
+`daily.yml` 每天 08:00 由 cron 触发，自动完成：抓南京天气（wttr.in/Nanjing）+ 抓一句文学/哲学名言（hitokoto.cn `c=d&c=k`）→ 生成 `data.json` → 推送到 `bot/daily-update` 分支 → 开 PR → 等 CI 通过 → 自动合并 → 触发部署。前端通过 `fetch('data.json')` 读取数据渲染。
 
 ### 可复用模式：bot 自动更新「受保护」的 main
 
@@ -37,10 +38,11 @@ data.json                  由 cron 工作流每天生成的数据
 3. **前置条件**（都在仓库设置里开一次）：
    - 允许 Actions 创建 PR：Settings → Actions → General → *Allow GitHub Actions to create and approve pull requests*
    - 允许 auto-merge：Settings → 仓库通用设置，或 `gh api -X PATCH repos/OWNER/REPO -f allow_auto_merge=true`
-   - 工作流里声明 `permissions: contents: write` + `pull-requests: write`，并给 `gh` 设 `GH_TOKEN: ${{ github.token }}`
+   - 存一个 `BOT_TOKEN` Secret（见第 7 点），避免每次人工批准 CI
 4. **判断文件是否有变化**：用 `git status --porcelain <file>`，不要用 `git diff --quiet`（后者对未跟踪的新文件永远返回「无变化」）。
 5. **bot 分支建议 `git push --force`**：bot 分支是专用且可丢弃的，本地每次全新 clone，强制覆盖避免 non-fast-forward。
-6. **注意**：bot 首次触发 CI 可能需要人工点一次 *Approve and run*（防滥用机制）。
+6. **使用用户 token 作为 bot 身份**：在工作流里设 `GH_TOKEN: ${{ secrets.BOT_TOKEN }}`。若用 GitHub 自动发的临时 token（`github-actions[bot]`），bot 每次开 PR 都会被 GitHub 当成首次贡献者，要求人工点 *Approve and run*。
+7. **生成 BOT_TOKEN**：在 GitHub Settings → Developer settings → Personal access tokens 生成一个勾选 `repo` scope 的 classic token，存入仓库 Settings → Secrets and variables → Actions，命名 `BOT_TOKEN`。token 只在加密 Secrets 中，不进代码、不进日志。
 
 ---
 
