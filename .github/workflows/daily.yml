@@ -74,7 +74,7 @@ jobs:
 
       - name: Commit and push via PR (auto-merge after CI passes)
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.BOT_TOKEN || github.token }}
         run: |
           if [ -z "$(git status --porcelain data.json)" ]; then
             echo "No change in data.json, skipping"
