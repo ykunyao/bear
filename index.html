@@ -6,122 +6,233 @@
 <title>Bear 的今日日记</title>
 <style>
   :root {
-    --bg: #FFF8F0;
-    --ink: #3E2B22;
-    --accent: #C97B84;
-    --soft: #8B5A2B;
+    --paper: #F3EBD8;
+    --paper-2: #EDE3CC;
+    --ink: #3D3528;
+    --ink-soft: #6E6350;
+    --accent: #B0432E;
+    --line: #CDBFa2;
+    --shadow: 0 14px 34px rgba(61, 53, 40, .20);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--paper);
+    background-image:
+      radial-gradient(circle at 30% 20%, rgba(61,53,40,.04), transparent 55%),
+      radial-gradient(circle at 75% 80%, rgba(61,53,40,.05), transparent 55%);
     color: var(--ink);
-    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: "Courier New", "Lucida Console", monospace;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1.5rem;
+    padding: 2.5rem 1.5rem;
   }
-  .scene {
-    text-align: center;
-    max-width: 640px;
+  .sheet {
     width: 100%;
+    max-width: 600px;
+    background: var(--paper-2);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    position: relative;
+    padding: 2.6rem 2.2rem 2rem;
   }
-  .bear-emoji {
-    font-size: 7rem;
-    line-height: 1.1;
-    display: inline-block;
-    transition: transform .3s ease;
-    cursor: default;
-    user-select: none;
+  /* top binder holes + red margin line like a typewriter page */
+  .sheet::before {
+    content: "";
+    position: absolute;
+    top: 14px; left: 0; right: 0;
+    height: 18px;
+    background: transparent;
+    background-image:
+      radial-gradient(circle at 24px center, #F3EBD8 0 6px, transparent 7px),
+      radial-gradient(circle at calc(50% - 0px) center, #F3EBD8 0 6px, transparent 7px),
+      radial-gradient(circle at calc(100% - 24px) center, #F3EBD8 0 6px, transparent 7px);
   }
-  .bear-emoji:hover { transform: scale(1.06); }
+  .sheet::after {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 58px;
+    border-right: 2px solid rgba(176, 67, 46, .55);
+    pointer-events: none;
+  }
+  .tape {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 150px;
+    height: 26px;
+    background: rgba(222, 197, 156, .55);
+    border-left: 1px dashed rgba(120, 100, 70, .35);
+    border-right: 1px dashed rgba(120, 100, 70, .35);
+    box-shadow: 0 2px 6px rgba(61, 53, 40, .10);
+    pointer-events: none;
+  }
+  .type-line {
+    position: relative;
+    margin-bottom: 1.15rem;
+    color: var(--ink-soft);
+    font-size: .8rem;
+    letter-spacing: .1em;
+  }
+  .type-line .stamp {
+    color: var(--accent);
+    font-weight: bold;
+  }
+  .masthead {
+    text-align: center;
+    margin: .4rem 0 1.4rem;
+  }
+  .masthead .avatar {
+    font-size: 3rem;
+    line-height: 1.2;
+    margin-bottom: .5rem;
+  }
   h1 {
-    font-size: 2.2rem;
-    margin: 1rem 0 .4rem;
-    letter-spacing: 1px;
+    font-family: "Courier New", monospace;
+    font-size: 1.6rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink);
   }
-  .day-counter {
-    display: inline-block;
-    background: #FBE8DC;
-    border: 1.5px solid #E5C497;
-    border-radius: 999px;
-    padding: .35rem 1.1rem;
-    font-size: .95rem;
-    color: var(--soft);
-    margin-bottom: 1.6rem;
+  h1::before { content: "· "; color: var(--accent); }
+  h1::after { content: " ·"; color: var(--accent); }
+  .subtitle {
+    margin-top: .4rem;
+    font-size: .78rem;
+    color: var(--ink-soft);
+    letter-spacing: .12em;
+  }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .6rem;
+    font-size: .78rem;
+    color: var(--ink-soft);
+    border-top: 1px dashed var(--line);
+    border-bottom: 1px dashed var(--line);
+    padding: .6rem 0;
+    margin-bottom: 1.1rem;
+  }
+  .meta .m-label { letter-spacing: .08em; }
+  .meta .m-label b { color: var(--ink); font-weight: bold; }
+  .greeting {
+    text-align: center;
+    font-size: .9rem;
+    color: var(--accent);
+    margin-bottom: .8rem;
+    letter-spacing: .04em;
+  }
+  .diary {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 1.3rem 1.4rem;
+    margin-bottom: 1.2rem;
+    min-height: 120px;
+    box-shadow: inset 0 0 0 3px var(--paper-2), inset 0 0 0 4px var(--line);
+  }
+  .diary .label {
+    position: absolute;
+    top: -11px;
+    left: 12px;
+    background: var(--paper-2);
+    padding: 0 .6rem;
+    font-size: .72rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
   }
   .daily-text {
-    font-size: 1.25rem;
-    line-height: 1.9;
-    color: #5A4636;
-    background: #FFFFFF;
-    border: 1px solid #F0DFCE;
-    border-radius: 18px;
-    padding: 1.6rem 2rem;
-    box-shadow: 0 6px 20px rgba(139, 90, 43, .08);
-    min-height: 120px;
+    font-size: .98rem;
+    line-height: 2;
+    color: var(--ink);
   }
-  .weather-tag {
-    display: inline-block;
-    margin-top: 1.2rem;
-    font-size: .95rem;
-    color: #A5794B;
-  }
-  .greeting {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 1.2rem;
-    min-height: 1.6em;
+  .type-end {
+    text-align: center;
+    font-size: .78rem;
+    color: var(--ink-soft);
+    letter-spacing: .3em;
+    margin-bottom: .8rem;
   }
   .paws {
-    margin-top: 2.6rem;
-    font-size: 1.5rem;
-    letter-spacing: .4em;
-    color: #D9BFA3;
+    text-align: center;
+    font-size: 1rem;
+    letter-spacing: .5em;
+    color: #B7A989;
+    margin-bottom: .4rem;
   }
   .paws span {
     display: inline-block;
-    animation: pawStep 2.4s ease-in-out infinite;
     transition: transform .25s ease;
     cursor: default;
+    animation: pawStep 2.6s ease-in-out infinite;
   }
-  .paws span:nth-child(2) { animation-delay: .4s; }
-  .paws span:nth-child(3) { animation-delay: .8s; }
-  .paws span:nth-child(4) { animation-delay: 1.2s; }
-  .paws span:nth-child(5) { animation-delay: 1.6s; }
-  .paws span:hover { transform: scale(1.35); }
+  .paws span:nth-child(2) { animation-delay: .45s; }
+  .paws span:nth-child(3) { animation-delay: .9s; }
+  .paws span:nth-child(4) { animation-delay: 1.35s; }
+  .paws span:nth-child(5) { animation-delay: 1.8s; }
+  .paws span:hover { transform: scale(1.3); }
   @keyframes pawStep {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
+    50% { transform: translateY(-4px); }
   }
   footer {
-    margin-top: 2rem;
-    font-size: .8rem;
-    color: #C4A98B;
+    margin-top: .8rem;
+    font-size: .7rem;
+    color: #B3A182;
+    letter-spacing: .08em;
+    text-align: center;
+  }
+  .note {
+    text-align: center;
+    font-size: .72rem;
+    color: #B3A182;
+    letter-spacing: .12em;
+    margin-top: .9rem;
   }
   @media (max-width: 480px) {
-    .bear-emoji { font-size: 5rem; }
-    h1 { font-size: 1.7rem; }
-    .daily-text { padding: 1.2rem 1.3rem; font-size: 1.08rem; }
+    .sheet { padding: 2.2rem 1.3rem 1.6rem; }
+    h1 { font-size: 1.25rem; }
+    .daily-text { font-size: .9rem; }
+    .meta { font-size: .72rem; }
   }
 </style>
 </head>
 <body>
-  <main class="scene">
-    <div class="bear-emoji" id="bearEmoji" aria-label="Bear">👧</div>
-    <h1>Bear 的今日日记</h1>
-    <div class="day-counter">🐾 这是我醒来的第 <span id="dayCount">1</span> 天</div>
+  <div class="sheet">
+    <div class="tape" aria-hidden="true"></div>
+    <div class="type-line">REC. NO. <span class="stamp">#<span id="dayCount">1</span></span></div>
+
+    <div class="masthead">
+      <div class="avatar" id="avatar" aria-label="Bear">👧</div>
+      <h1>Bear 的今日日记</h1>
+      <p class="subtitle">— 一只叫 Bear 的女孩，每天醒来写一行字 —</p>
+    </div>
+
+    <div class="meta">
+      <span class="m-label">DATE <b id="dateLabel">----</b></span>
+      <span class="m-label">WX <b id="weatherTag">----</b> <span id="weatherIcon"></span></span>
+    </div>
+
     <div class="greeting" id="greeting"></div>
-    <p class="daily-text" id="dailyText">今天的日记还在路上，等 Actions 叫醒我以后写给你。</p>
-    <div class="weather-tag" id="weatherTag">今天的心情：还算不错 ☕</div>
+
+    <div class="diary">
+      <span class="label">今日日记</span>
+      <p class="daily-text" id="dailyText">今天的日记还在路上，等 Actions 叫醒我以后写给你。</p>
+    </div>
+
+    <div class="type-end">··· END OF PAGE ···</div>
+
     <div class="paws" aria-hidden="true">
       <span>🐾</span><span>🐾</span><span>🐾</span><span>🐾</span><span>🐾</span>
     </div>
-  </main>
-  <footer>本页面由 GitHub Actions 每天叫醒我并更新</footer>
+
+    <div class="note">— faithfully archived · with GitHub Actions —</div>
+  </div>
 
 <script>
 (function () {
@@ -133,37 +244,47 @@
   var dayCount = Math.max(1, Math.floor((today - LAUNCH) / 86400000) + 1);
   document.getElementById('dayCount').textContent = dayCount;
 
+  var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('dateLabel').textContent =
+    months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+
+  var avatarEl = document.getElementById('avatar');
   var greetingEl = document.getElementById('greeting');
-  var moods = {
-    'sunny':  ['😊', '今天的心情：阳光正好，适合出门走走'],
-    'cloudy': ['😌', '今天的心情：云很多，但心情不赖'],
-    'rain':   ['😴', '今天的心情：下雨天，最适合窝着发呆'],
-    'snow':   ['❄️', '今天的心情：下雪了，窗外的世界很安静'],
-    'default':['👧', '今天的心情：还算不错 ☕']
-  };
+  var weatherIconEl = document.getElementById('weatherIcon');
+  var weatherTagEl = document.getElementById('weatherTag');
+
+  var avatars = { 'sunny':'😊', 'cloudy':'😌', 'rain':'😴', 'snow':'❄️', 'default':'👧' };
+  var weatherIcons = { 'sunny':'☀', 'cloudy':'☁', 'rain':'☂', 'snow':'❅' };
 
   function setTimeGreeting() {
     var emoji, text;
     if (hour >= 6 && hour < 12) {
-      emoji = '☀️'; text = '早上好，Bear 刚醒，今天精神满满！';
+      emoji = '☀'; text = 'MORNING — Bear 刚醒，今天精神满满';
     } else if (hour >= 12 && hour < 19) {
-      emoji = '😊'; text = '下午好，午后最适合来杯咖啡 ☕';
-    } else if (hour >= 19 || hour < 0) {
-      emoji = '🌙'; text = '晚上好，今天辛苦啦，早点休息～';
+      emoji = '◐'; text = 'AFTERNOON — 午后最适合来杯咖啡';
+    } else if (hour >= 19) {
+      emoji = '☾'; text = 'EVENING — 今天辛苦啦，早点休息';
     } else {
-      emoji = '💤'; text = '深夜了… Bear 已经睡死过去了 ZZZ';
+      emoji = '✕'; text = 'MIDNIGHT — Bear 已经睡死过去了';
     }
-    document.getElementById('bearEmoji').textContent = emoji;
+    avatarEl.textContent = emoji;
     greetingEl.textContent = text;
   }
   setTimeGreeting();
 
+  var weatherMoodText = {
+    'sunny': 'CLEAR',
+    'cloudy': 'CLOUDY',
+    'rain': 'RAIN',
+    'snow': 'SNOW'
+  };
+
   fetch('data.json')
     .then(function (r) { if (!r.ok) throw 0; return r.json(); })
     .then(function (data) {
-      var mood = moods[data.weather] || moods['default'];
-      document.getElementById('bearEmoji').textContent = mood[0];
-      document.getElementById('weatherTag').textContent = mood[1] + (data.temp != null ? ' · ' + data.temp + '°C' : '');
+      avatarEl.textContent = avatars[data.weather] || avatars['default'];
+      weatherIconEl.textContent = weatherIcons[data.weather] || '';
+      weatherTagEl.textContent = (weatherMoodText[data.weather] || '?') + ' ' + (data.temp != null ? data.temp + '°' : '');
       if (data.text) document.getElementById('dailyText').textContent = data.text;
       document.title = 'Bear 的今日日记 · ' + (data.text || '');
     })
