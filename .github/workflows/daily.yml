@@ -1,0 +1,81 @@
+name: bear daily update
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch weather
+        run: |
+          curl -s --max-time 20 "https://wttr.in/?format=j1" -o weather.json
+          echo "weather.json fetched ($(wc -c < weather.json) bytes)"
+
+      - name: Fetch quote
+        id: quote
+        run: |
+          curl -s --max-time 20 "https://v1.hitokoto.cn/?c=d&c=k&c=i&encode=json" -o quote.json
+          python -c "
+          import json
+          q = json.load(open('quote.json'))
+          print(q['hitokoto'])
+          print(q['from'] if q.get('from') else '')
+          " > quote.txt
+
+      - name: Build data.json
+        run: |
+          python - <<'PY'
+          import json, subprocess, sys
+
+          temp = subprocess.run(['python','-c','import json;print(json.load(open("weather.json"))["current_condition"][0]["temp_C"])'],capture_output=True,text=True).stdout.strip()
+          code = subprocess.run(['python','-c','import json;print(json.load(open("weather.json"))["current_condition"][0]["weatherCode"])'],capture_output=True,text=True).stdout.strip()
+
+          mapping = {
+            '113': 'sunny',   # Clear/Sunny
+            '116': 'cloudy',  # Partly cloudy
+            '119': 'cloudy',  # Cloudy
+            '176': 'rain',    # Patchy rain
+            '266': 'rain',    # Light drizzle
+            '302': 'rain',    # Moderate rain
+            '317': 'rain',    # Light sleet
+            '281': 'rain',    # Freezing drizzle
+            '338': 'snow',    # Heavy snow
+            '323': 'snow',    # Blowing snow
+            '326': 'snow',    # Light snow
+          }
+          weather = mapping.get(code, 'cloudy')
+
+          with open('quote.txt') as f:
+              lines = [l.strip() for l in f if l.strip()]
+          sentence = lines[0] if lines else '今天也要元气满满地生活！'
+          source = lines[1] if len(lines) > 1 else ''
+
+          data = {
+            'weather': weather,
+            'temp': temp,
+            'text': f'今天想说：{sentence}' + (f' —— {source}' if source else ''),
+            'updated_at': __import__('datetime').date.today().isoformat()
+          }
+          json.dump(data, open('data.json','w',encoding='utf-8'), ensure_ascii=False, indent=2)
+          print('data.json written:', data)
+          PY
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet data.json; then
+            echo "No change in data.json, skipping commit"
+            exit 0
+          fi
+          git config user.name "bear-updater[bot]"
+          git config user.email "bear-updater@users.noreply.github.com"
+          git add data.json
+          git commit -m "daily: update bear's diary ($(date +%F))"
+          git push origin main
