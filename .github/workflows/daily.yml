@@ -71,14 +71,29 @@ jobs:
       - name: Cleanup temp files
         run: rm -f weather.json quote.json quote.txt
 
-      - name: Commit and push
+      - name: Commit and push via PR (auto-merge after CI passes)
         run: |
           if [ -z "$(git status --porcelain data.json)" ]; then
-            echo "No change in data.json, skipping commit"
+            echo "No change in data.json, skipping"
             exit 0
           fi
+
           git config user.name "bear-updater[bot]"
           git config user.email "bear-updater@users.noreply.github.com"
+
+          BRANCH="bot/daily-update"
+          git checkout -b "$BRANCH"
           git add data.json
           git commit -m "daily: update bear's diary ($(date +%F))"
-          git push origin main
+
+          if git ls-remote --exit-code origin "$BRANCH" > /dev/null 2>&1; then
+            git push origin "$BRANCH"
+          else
+            git push -u origin "$BRANCH"
+          fi
+
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" \
+            --title "daily: update bear's diary ($(date +%F))" \
+            --body "Automated daily update of data.json." || true
+
+          gh pr merge --repo "$GITHUB_REPOSITORY" "$BRANCH" --auto --merge || true
