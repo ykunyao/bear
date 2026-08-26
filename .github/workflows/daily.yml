@@ -88,11 +88,7 @@ jobs:
           git add data.json
           git commit -m "daily: update bear's diary ($(date +%F))"
 
-          if git ls-remote --exit-code origin "$BRANCH" > /dev/null 2>&1; then
-            git push origin "$BRANCH"
-          else
-            git push -u origin "$BRANCH"
-          fi
+          git push --force-with-lease origin "$BRANCH" || git push -u origin "$BRANCH"
 
           gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" \
             --title "daily: update bear's diary ($(date +%F))" \
