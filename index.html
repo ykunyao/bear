@@ -131,24 +131,9 @@
     font-size: .8rem;
     letter-spacing: .1em;
   }
-    position: relative;
-    margin-bottom: 1.15rem;
-    color: var(--ink-soft);
-    font-size: .8rem;
-    letter-spacing: .1em;
-  }
   .type-line .stamp {
     color: var(--accent);
     font-weight: bold;
-  }
-  .masthead {
-    text-align: center;
-    margin: .4rem 0 1.4rem;
-  }
-  .masthead .avatar {
-    font-size: 3rem;
-    line-height: 1.2;
-    margin-bottom: .5rem;
   }
   h1 {
     font-family: "Courier New", monospace;
@@ -326,10 +311,12 @@
   var weatherTagEl = document.getElementById('weatherTag');
   var dailyTextEl = document.getElementById('dailyText');
 
-  var avatars = { 'sunny':'😊', 'cloudy':'😌', 'rain':'😴', 'snow':'❄️', 'default':'👧' };
-  var weatherIcons = { 'sunny':'☀', 'cloudy':'☁', 'rain':'☂', 'snow':'❅' };
+  var avatars = { 'sunny':'😊', 'cloudy':'😌', 'rain':'😴', 'snow':'❄️', 'fog':'🌫', 'thunder':'⛈', 'default':'👧' };
+  var weatherIcons = { 'sunny':'☀', 'cloudy':'☁', 'rain':'☂', 'snow':'❅', 'fog':'≡', 'thunder':'⚡' };
 
+  var typingTimer = null;
   function typeInto(el, text, speed) {
+    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
     var i = 0;
     var caret = document.createElement('span');
     caret.className = 'caret';
@@ -344,10 +331,10 @@
           caret.before(document.createTextNode(char));
         }
         i++;
-        setTimeout(step, speed || 60);
+        typingTimer = setTimeout(step, speed || 60);
       }
     }
-    setTimeout(step, 250);
+    typingTimer = setTimeout(step, 250);
   }
 
   function setTimeGreeting() {
@@ -366,11 +353,25 @@
   }
   setTimeGreeting();
 
+  function setWeatherGreeting(key) {
+    var map = {
+      'sunny': '今天天气晴朗，Bear 心情很好',
+      'cloudy': '今天云很多，但 Bear 心情不赖',
+      'rain': '下雨天，Bear 最适合窝着发呆',
+      'snow': '下雪了，Bear 想看窗外的世界',
+      'fog': '今天有雾，Bear 有点看不清路',
+      'thunder': '打雷了，Bear 缩在被窝里'
+    };
+    return map[key] || 'Bear 在记录今天的天气';
+  }
+
   var weatherMoodText = {
     'sunny': 'CLEAR',
     'cloudy': 'CLOUDY',
     'rain': 'RAIN',
-    'snow': 'SNOW'
+    'snow': 'SNOW',
+    'fog': 'FOG',
+    'thunder': 'STORM'
   };
 
   typeInto(dailyTextEl, dailyTextEl.textContent, 55);
@@ -378,9 +379,13 @@
   fetch('data.json')
     .then(function (r) { if (!r.ok) throw 0; return r.json(); })
     .then(function (data) {
-      avatarEl.textContent = avatars[data.weather] || avatars['default'];
-      weatherIconEl.textContent = weatherIcons[data.weather] || '';
-      weatherTagEl.textContent = (weatherMoodText[data.weather] || '?') + ' ' + (data.temp != null ? data.temp + '°' : '');
+      var moodKey = data.weather;
+      avatarEl.textContent = avatars[moodKey] || avatars['default'];
+      weatherIconEl.textContent = weatherIcons[moodKey] || '';
+      weatherTagEl.textContent = (weatherMoodText[moodKey] || '?') + ' ' + (data.temp != null ? data.temp + '°' : '');
+      if (moodKey && moodKey !== 'default') {
+        greetingEl.textContent = setWeatherGreeting(moodKey);
+      }
       if (data.text) typeInto(dailyTextEl, data.text, 45);
       document.title = 'Bear 的今日日记 · ' + (data.text || '');
     })

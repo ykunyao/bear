@@ -2,7 +2,7 @@ name: bear daily update
 
 on:
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 permissions:
@@ -12,6 +12,8 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
     steps:
       - uses: actions/checkout@v5
 
@@ -40,17 +42,60 @@ jobs:
           code = subprocess.run(['python','-c','import json;print(json.load(open("weather.json"))["current_condition"][0]["weatherCode"])'],capture_output=True,text=True).stdout.strip()
 
           mapping = {
-            '113': 'sunny',   # Clear/Sunny
+            # WWO weather codes -> category
+            # Clear
+            '113': 'sunny',
+            # Cloudy / overcast
             '116': 'cloudy',  # Partly cloudy
             '119': 'cloudy',  # Cloudy
+            '122': 'cloudy',  # Overcast
+            '143': 'fog',     # Mist
+            '248': 'fog',     # Fog
+            '260': 'fog',     # Freezing fog
+            # Rain
             '176': 'rain',    # Patchy rain
-            '266': 'rain',    # Light drizzle
-            '302': 'rain',    # Moderate rain
-            '317': 'rain',    # Light sleet
+            '182': 'rain',    # Patchy sleet
+            '185': 'rain',    # Patchy freezing drizzle
+            '263': 'rain',    # Light drizzle
+            '266': 'rain',    # Drizzle
             '281': 'rain',    # Freezing drizzle
-            '338': 'snow',    # Heavy snow
-            '323': 'snow',    # Blowing snow
+            '284': 'rain',    # Heavy freezing drizzle
+            '293': 'rain',    # Light rain
+            '296': 'rain',    # Rain
+            '299': 'rain',    # Heavy rain
+            '302': 'rain',    # Moderate rain
+            '305': 'rain',    # Heavy rain
+            '308': 'rain',    # Heavy rain
+            '311': 'rain',    # Freezing rain
+            '314': 'rain',    # Light freezing rain
+            '317': 'rain',    # Light sleet
+            '320': 'rain',    # Sleet
+            '350': 'snow',    # Ice pellets
+            '353': 'rain',    # Light rain shower
+            '356': 'rain',    # Moderate/heavy rain shower
+            '359': 'rain',    # Torrential rain shower
+            '362': 'rain',    # Light sleet shower
+            '365': 'rain',    # Moderate/heavy sleet shower
+            '377': 'rain',    # Hail shower
+            '392': 'rain',    # Mixed rain/snow shower
+            # Snow
+            '179': 'snow',    # Patchy snow
+            '227': 'snow',    # Blowing snow
+            '230': 'snow',    # Blizzard
+            '323': 'snow',    # Light snow
             '326': 'snow',    # Light snow
+            '329': 'snow',    # Moderate snow
+            '332': 'snow',    # Heavy snow
+            '335': 'snow',    # Heavy snow
+            '338': 'snow',    # Heavy snow
+            '368': 'snow',    # Light snow shower
+            '371': 'snow',    # Moderate/heavy snow shower
+            '374': 'snow',    # Ice pellets shower
+            '395': 'snow',    # Heavy snow
+            # Thunderstorm
+            '200': 'thunder', # Thunderstorm
+            '386': 'thunder', # Thunderstorm
+            '389': 'thunder', # Heavy thunderstorm
           }
           weather = mapping.get(code, 'cloudy')
 
