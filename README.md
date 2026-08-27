@@ -42,7 +42,7 @@ data.json                  由 cron 工作流每天生成的数据
 4. **判断文件是否有变化**：用 `git status --porcelain <file>`，不要用 `git diff --quiet`（后者对未跟踪的新文件永远返回「无变化」）。
 5. **bot 分支建议 `git push --force`**：bot 分支是专用且可丢弃的，本地每次全新 clone，强制覆盖避免 non-fast-forward。
 6. **使用用户 token 作为 bot 身份**：在工作流里设 `GH_TOKEN: ${{ secrets.BOT_TOKEN }}`。若用 GitHub 自动发的临时 token（`github-actions[bot]`），bot 每次开 PR 都会被 GitHub 当成首次贡献者，要求人工点 *Approve and run*。
-7. **生成 BOT_TOKEN**：在 GitHub Settings → Developer settings → Personal access tokens 生成一个勾选 `repo` scope 的 classic token，存入仓库 Settings → Secrets and variables → Actions，命名 `BOT_TOKEN`。token 只在加密 Secrets 中，不进代码、不进日志。
+7. **生成 BOT_TOKEN（推荐 fine-grained）**：在 GitHub Settings → Developer settings → Fine-grained personal access tokens 生成一个 **只授权本仓库** 的 token，权限选 *Repository permissions → Contents: Read and write* 与 *Pull requests: Read and write*，存入仓库 Settings → Secrets and variables → Actions，命名 `BOT_TOKEN`。它无法访问你的其他仓库（比 classic PAT + `repo` scope 更安全，后者能推你的所有仓库）。token 只在加密 Secrets 中，不进代码、不进日志。
 
 ---
 
