@@ -25,16 +25,8 @@ jobs:
           curl -s --max-time 20 "https://wttr.in/Nanjing?format=j1" -o weather.json
           echo "weather.json fetched ($(wc -c < weather.json) bytes)"
 
-      - name: Fetch quote
-        id: quote
-        run: |
-          curl -s --max-time 20 "https://v1.hitokoto.cn/?c=d&c=k&encode=json" -o quote.json
-          python -c "
-          import json
-          q = json.load(open('quote.json'))
-          print(q['hitokoto'])
-          print(q['from'] if q.get('from') else '')
-          " > quote.txt
+      - name: Install cnlunar (offline almanac library)
+        run: pip install --quiet cnlunar
 
       - name: Build data.json
         run: |
@@ -102,23 +94,25 @@ jobs:
           }
           weather = mapping.get(code, 'cloudy')
 
-          with open('quote.txt') as f:
-              lines = [l.strip() for l in f if l.strip()]
-          sentence = lines[0] if lines else '今天也要元气满满地生活！'
-          source = lines[1] if len(lines) > 1 else ''
+          import cnlunar, datetime
+          lunar = cnlunar.Lunar(datetime.datetime.now(), godType='8char')
+          month = lunar.lunarMonthCn.rstrip('大小')
+          almanac = ('今日' + lunar.todaySolarTerms + ' · ' if lunar.todaySolarTerms not in ('无', '') else '') + '农历' + month + lunar.lunarDayCn
+          yi = '、'.join(lunar.goodThing[:3])
+          ji = '、'.join(lunar.badThing[:3])
 
           data = {
             'weather': weather,
             'temp': temp,
-            'text': f'今天想说：{sentence}' + (f' —— {source}' if source else ''),
-            'updated_at': __import__('datetime').date.today().isoformat()
+            'text': f'{almanac} · 宜 {yi} · 忌 {ji}',
+            'updated_at': datetime.date.today().isoformat()
           }
           json.dump(data, open('data.json','w',encoding='utf-8'), ensure_ascii=False, indent=2)
           print('data.json written:', data)
           PY
 
       - name: Cleanup temp files
-        run: rm -f weather.json quote.json quote.txt
+        run: rm -f weather.json
 
       - name: Commit and push via PR (auto-merge after CI passes)
         env:
