@@ -27,7 +27,7 @@ data.json                  由 cron 工作流每天生成的数据
 
 ## 每日自动更新
 
-`daily.yml` 每天北京时间 06:23 由 cron 触发（避开整点调度拥堵，确保 08:00 前送达），自动完成：抓南京天气（wttr.in/Nanjing）+ 用 [cnlunar](https://pypi.org/project/cnlunar/) 离线生成当日老黄历（农历/节气/宜忌）→ 生成 `data.json` → 推送到 `bot/daily-update` 分支 → 开 PR → 等 CI 通过 → 自动合并 → 触发部署。前端通过 `fetch('data.json')` 读取数据渲染。
+`daily.yml` 每天北京时间 06:23 由 cron 触发（避开整点调度拥堵，确保 08:00 前送达），自动完成：抓南京天气（wttr.in/Nanjing）+ 抓一句文学/哲学名言（hitokoto.cn `c=d&c=k`）→ 生成 `data.json` → 推送到 `bot/daily-update` 分支 → 开 PR → 等 CI 通过 → 自动合并 → 触发部署。前端通过 `fetch('data.json')` 读取数据渲染。
 
 ### 可复用模式：bot 自动更新「受保护」的 main
 
