@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bear 的今日日记</title>
+<title>熊的今日日记</title>
 <style>
   :root {
     --paper: #F3EBD8;
@@ -22,7 +22,7 @@
       radial-gradient(circle at 30% 20%, rgba(61,53,40,.04), transparent 55%),
       radial-gradient(circle at 75% 80%, rgba(61,53,40,.05), transparent 55%);
     color: var(--ink);
-    font-family: "Courier New", "Lucida Console", monospace;
+    font-family: "Courier New", "Noto Serif SC", "STSong", "SimSun", "Lucida Console", monospace;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -136,7 +136,7 @@
     transform: rotate(-2deg);
   }
   h1 {
-    font-family: "Courier New", monospace;
+    font-family: "Courier New", "Noto Serif SC", "STSong", "SimSun", monospace;
     font-size: 1.6rem;
     letter-spacing: .14em;
     text-transform: uppercase;
@@ -163,7 +163,8 @@
     font-size: .9rem;
     color: var(--accent);
     margin-bottom: .8rem;
-    letter-spacing: .04em;
+    letter-spacing: .3em;
+    text-indent: .3em;
   }
   .diary {
     position: relative;
@@ -202,7 +203,7 @@
   }
   @keyframes blink { 50% { opacity: 0; } }
   .source {
-    margin-top: .8rem;
+    margin-top: .45rem;
     text-align: right;
     font-size: .76rem;
     letter-spacing: .08em;
@@ -254,7 +255,7 @@
 
     <div class="masthead">
       <div class="poststamp"><div class="seal">熊</div></div>
-      <h1>Bear 的今日日记</h1>
+      <h1>熊的今日日记</h1>
     </div>
 
     <div class="meta">
@@ -320,6 +321,8 @@
         }
         i++;
         typingTimer = setTimeout(step, speed || 60);
+      } else {
+        caret.remove();
       }
     }
     typingTimer = setTimeout(step, 250);
@@ -328,29 +331,17 @@
   function setTimeGreeting() {
     var text;
     if (hour >= 6 && hour < 12) {
-      text = '清晨 — Bear 刚醒，今天精神满满';
+      text = '清晨';
     } else if (hour >= 12 && hour < 19) {
-      text = '午后 — 最适合来杯咖啡的时候';
+      text = '午后';
     } else if (hour >= 19) {
-      text = '夜里 — 今天辛苦啦，早点休息';
+      text = '日暮';
     } else {
-      text = '深夜 — Bear 已经睡下了';
+      text = '夜深';
     }
     greetingEl.textContent = text;
   }
   setTimeGreeting();
-
-  function setWeatherGreeting(key) {
-    var map = {
-      'sunny': '今天天气晴朗，Bear 心情很好',
-      'cloudy': '今天云很多，但 Bear 心情不赖',
-      'rain': '下雨天，Bear 最适合窝着发呆',
-      'snow': '下雪了，Bear 想看窗外的世界',
-      'fog': '今天有雾，Bear 有点看不清路',
-      'thunder': '打雷了，Bear 缩在被窝里'
-    };
-    return map[key] || 'Bear 在记录今天的天气';
-  }
 
   typeInto(dailyTextEl, dailyTextEl.textContent, 55);
 
@@ -361,9 +352,6 @@
       var icon = weatherIcons[key] || '';
       var name = weatherNames[key] || '天气';
       weatherTagEl.textContent = name + ' ' + (data.temp != null ? data.temp + '°' : '') + ' ' + icon;
-      if (key) {
-        greetingEl.textContent = setWeatherGreeting(key);
-      }
       /* 新格式：text 为纯引文、from 为出处；兼容旧格式"text 含 —— 出处" */
       var raw = data.text || '';
       var sentence = raw;
@@ -375,7 +363,7 @@
       }
       if (sentence) typeInto(dailyTextEl, sentence, 45);
       sourceEl.textContent = source ? '—— ' + source : '';
-      document.title = 'Bear 的今日日记 · ' + sentence;
+      document.title = '熊的今日日记 · ' + sentence;
     })
     .catch(function () {
       /* no data.json yet — keep defaults */
