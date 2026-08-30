@@ -106,11 +106,14 @@ jobs:
               lines = [l.strip() for l in f if l.strip()]
           sentence = lines[0] if lines else '今天也要元气满满地生活！'
           source = lines[1] if len(lines) > 1 else ''
+          if len(source) > 24:
+              source = source[:24] + '…'
 
           data = {
             'weather': weather,
             'temp': temp,
-            'text': f'今天想说：{sentence}' + (f' —— {source}' if source else ''),
+            'text': sentence,
+            'from': source,
             'updated_at': __import__('datetime').date.today().isoformat()
           }
           json.dump(data, open('data.json','w',encoding='utf-8'), ensure_ascii=False, indent=2)
