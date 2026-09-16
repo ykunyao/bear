@@ -22,7 +22,10 @@ jobs:
 
       - name: Fetch weather
         run: |
-          curl -s --max-time 20 "https://wttr.in/Nanjing?format=j1" -o weather.json
+          # wttr.in 的 TLS 证书验证曾长期失败（curl exit 60），改用 Open-Meteo（免 Key，WMO 标准天气码）
+          curl -s --retry 3 --retry-delay 5 --max-time 20 \
+            "https://api.open-meteo.com/v1/forecast?latitude=32.06&longitude=118.78&current=temperature_2m,weather_code" \
+            -o weather.json
           echo "weather.json fetched ($(wc -c < weather.json) bytes)"
 
       - name: Fetch quote
@@ -39,66 +42,36 @@ jobs:
       - name: Build data.json
         run: |
           python - <<'PY'
-          import json, subprocess, sys
+          import json
 
-          temp = subprocess.run(['python','-c','import json;print(json.load(open("weather.json"))["current_condition"][0]["temp_C"])'],capture_output=True,text=True).stdout.strip()
-          code = subprocess.run(['python','-c','import json;print(json.load(open("weather.json"))["current_condition"][0]["weatherCode"])'],capture_output=True,text=True).stdout.strip()
+          current = json.load(open('weather.json'))['current']
+          temp = str(round(current['temperature_2m']))
+          code = current['weather_code']
 
           mapping = {
-            # WWO weather codes -> category
-            # Clear
-            '113': 'sunny',
-            # Cloudy / overcast
-            '116': 'cloudy',  # Partly cloudy
-            '119': 'cloudy',  # Cloudy
-            '122': 'cloudy',  # Overcast
-            '143': 'fog',     # Mist
-            '248': 'fog',     # Fog
-            '260': 'fog',     # Freezing fog
+            # WMO weather codes -> category
+            # Clear / mainly clear
+            0: 'sunny',
+            1: 'sunny',
+            # Partly cloudy / overcast
+            2: 'cloudy',
+            3: 'cloudy',
+            # Fog
+            45: 'fog',
+            48: 'fog',
+            # Drizzle
+            51: 'rain', 53: 'rain', 55: 'rain',
+            56: 'rain', 57: 'rain',
             # Rain
-            '176': 'rain',    # Patchy rain
-            '182': 'rain',    # Patchy sleet
-            '185': 'rain',    # Patchy freezing drizzle
-            '263': 'rain',    # Light drizzle
-            '266': 'rain',    # Drizzle
-            '281': 'rain',    # Freezing drizzle
-            '284': 'rain',    # Heavy freezing drizzle
-            '293': 'rain',    # Light rain
-            '296': 'rain',    # Rain
-            '299': 'rain',    # Heavy rain
-            '302': 'rain',    # Moderate rain
-            '305': 'rain',    # Heavy rain
-            '308': 'rain',    # Heavy rain
-            '311': 'rain',    # Freezing rain
-            '314': 'rain',    # Light freezing rain
-            '317': 'rain',    # Light sleet
-            '320': 'rain',    # Sleet
-            '350': 'snow',    # Ice pellets
-            '353': 'rain',    # Light rain shower
-            '356': 'rain',    # Moderate/heavy rain shower
-            '359': 'rain',    # Torrential rain shower
-            '362': 'rain',    # Light sleet shower
-            '365': 'rain',    # Moderate/heavy sleet shower
-            '377': 'rain',    # Hail shower
-            '392': 'rain',    # Mixed rain/snow shower
+            61: 'rain', 63: 'rain', 65: 'rain',
+            66: 'rain', 67: 'rain',
             # Snow
-            '179': 'snow',    # Patchy snow
-            '227': 'snow',    # Blowing snow
-            '230': 'snow',    # Blizzard
-            '323': 'snow',    # Light snow
-            '326': 'snow',    # Light snow
-            '329': 'snow',    # Moderate snow
-            '332': 'snow',    # Heavy snow
-            '335': 'snow',    # Heavy snow
-            '338': 'snow',    # Heavy snow
-            '368': 'snow',    # Light snow shower
-            '371': 'snow',    # Moderate/heavy snow shower
-            '374': 'snow',    # Ice pellets shower
-            '395': 'snow',    # Heavy snow
+            71: 'snow', 73: 'snow', 75: 'snow', 77: 'snow',
+            # Showers
+            80: 'rain', 81: 'rain', 82: 'rain',
+            85: 'snow', 86: 'snow',
             # Thunderstorm
-            '200': 'thunder', # Thunderstorm
-            '386': 'thunder', # Thunderstorm
-            '389': 'thunder', # Heavy thunderstorm
+            95: 'thunder', 96: 'thunder', 99: 'thunder',
           }
           weather = mapping.get(code, 'cloudy')
 
